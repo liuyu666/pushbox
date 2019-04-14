@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>推箱子</title>
+	<!-- <link rel="stylesheet" href="reset.css"> -->
+	<style>
+		body,ul,img,li{
+			margin: 0;
+			padding: 0;
+		}
+		li{
+			list-style: none;
+			display: inline-block;
+		}
+		#frame li{
+			float:left;
+			list-style: none;
+		}
+		#frame{
+			position: relative;
+		}
+		.op0,.op1,.op2,.op3,img{
+			height:50px;
+			width: 50px;
+			/*display: inline-block;*/
+		}
+		img{
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+		.op0{
+			background:url('http://m.qpic.cn/psb?/V10g3NZ42lMbzu/Ngz8hFyAPKFtis9VP0ZXBLN.WYEMZVPgg8e2uPDR4as!/b/dEkBAAAAAAAA&bo=MgAyAAAAAAADFzI!&rf=viewer_4') no-repeat;
+		}
+		.op1{
+			background:url('http://m.qpic.cn/psb?/V10g3NZ42lMbzu/Xh*7LEyly5rNGCmrQvL.FFqOrK*9BQKorKG*3YLvI*I!/b/dDYBAAAAAAAA&bo=MgAyAAAAAAARFyA!&rf=viewer_4') no-repeat;
+		}
+		.op2{
+			background:url('http://m.qpic.cn/psb?/V10g3NZ42lMbzu/R6srNJ8ZV9cHCMOc2tyBH6cIQpAKRE9aIRIOaHghJl8!/b/dL8AAAAAAAAA&bo=MgAyAAAAAAARBzA!&rf=viewer_4') no-repeat;
+		}
+		.op3{
+			background:url('http://m.qpic.cn/psb?/V10g3NZ42lMbzu/HjOaK9QkUn*YtXZhgG25WC5Oy3oRtgihyVsWLUz.OGQ!/b/dL8AAAAAAAAA&bo=MgAyAAAAAAARFyA!&rf=viewer_4') no-repeat;
+		}
+		button{
+			height: 100px;
+			width: 100px;
+			line-height: 100px;
+			text-align: center;
+			position: relative;
+		}
+		/*.button{
+			height: 30px;
+			width: 100px;
+		}*/
+		.button_f,.button{
+			height: 100px;
+			width: 310px;
+			position: relative;
+			margin-left: 50px;
+		}
+		.button{
+			margin-top: 20px;
+		}
+		.up{
+			position: absolute;
+			left: 100px;
+		}
+		.left,.down,.right{
+			float: left;
+		}
+	</style>
+</head>
+<body>
+	<div>↑、↓、←、→键控制乌龟移动</div>
+	<ul id="frame">
+	</ul>
+	<div class="button">
+		<button class="up">↑</button>
+	</div>
+	<div class="button_f">
+		<button class="left">←</button>
+		<button class="down">↓</button>
+		<button class="right">→</button>
+	</div>
+	<script>
+		function $(v){
+			return document.querySelector(v);
+		}
+		let up_click = $(".up");
+		let down_click = $(".down");
+		let left_click = $(".left");
+		let right_click = $(".right");
+		let frame = $("#frame");
+		let objData = 
+		[
+			{
+				map:[
+						0,0,1,1,1,0,0,0,
+						0,1,3,3,1,1,1,1,
+						0,1,2,2,3,2,2,1,
+						1,2,2,2,1,2,1,0,
+						1,2,2,2,2,3,1,0,
+						1,2,2,2,2,2,2,1,
+						0,1,2,2,2,2,1,0,
+						0,0,1,1,1,1,1,0
+					],//地图，静态点
+				person:{x:4,y:6},//第5列7行，0开始计数
+				box:[
+					{x:5,y:3},
+					{x:3,y:5},
+					{x:2,y:4},
+					{x:4,y:5}
+				]
+			},
+			{
+				map:[
+					0,0,1,1,1,0,0,0,
+					0,1,3,3,1,1,1,1,
+					0,1,2,2,2,2,2,1,
+					1,2,2,2,1,2,2,1,
+					1,2,2,1,2,3,2,1,
+					1,2,2,2,2,2,2,1,
+					1,3,2,2,2,2,1,0,
+					0,1,1,1,1,1,1,0
+				],
+				person:{x:4,y:6},
+				box:[
+					{x:5,y:3},
+					{x:3,y:5},
+					{x:2,y:4},
+					{x:4,y:5}
+				]
+			}
+
+		]
+		var len = objData.length;
+		console.log(len);
+		var index = 0;
+		start();
+		function start(){
+			let elem = $("#frame");
+		    while(elem.hasChildNodes()) {//当elem下还存在子节点时 循环继续
+		        elem.removeChild(elem.firstChild);
+		    }
+			let map = objData[index].map;
+			let box = objData[index].box;
+			let person = objData[index].person;
+			let row = Math.sqrt(map.length);
+			frame.style.width = row*50+"px";
+			frame.style.height = row*50+"px";
+			let oFrag = document.createDocumentFragment(); 
+			for(let i=0;i<map.length;i++){//遍历静态地图
+						let op = document.createElement("li"); 
+						op.className="op"+map[i];
+			    		oFrag.appendChild(op);  
+			}
+			function p_box(){
+				for(let i=0;i<box.length;i++){//遍历箱子位置加属性
+					let ob = document.createElement("img"); 
+					ob.className="ob";
+					ob.src="http://m.qpic.cn/psb?/V10g3NZ42lMbzu/bDv.Jx*K4MO7J1RbWv74co.yzh3*2At1QZ9q9VK2t6I!/b/dD4BAAAAAAAA&bo=MgAyAAAAAAARFyA!&rf=viewer_4";
+		    		frame.appendChild(ob);
+		    		ob.style.top = (box[i].y)*50+"px";
+		    		ob.style.left = (box[i].x)*50+"px";
+		    		let ind = box[i].y*8+box[i].x;
+		    		map[ind] = 4;
+				}
+			}
+			p_box();
+			function ob_remove(){
+				let tagElements = document.querySelectorAll("#frame img")
+				for (let m = 0; m < tagElements.length; m++) {
+		            if (tagElements[m].className == "ob") {
+		                tagElements[m].parentNode.removeChild(tagElements[m]);//去除元素
+		            }
+	            }
+			}
+			let og = document.createElement("img");//乌龟
+			og.src="http://m.qpic.cn/psb?/V10g3NZ42lMbzu/vc9kxn8OPF0Cnr6s1J3ojEImHTWV7L9s7sd6on.eFYI!/b/dFIBAAAAAAAA&bo=MQAxAAAAAAADFzI!&rf=viewer_4";
+			og.className="og";
+			oFrag.appendChild(og);
+			frame.appendChild(oFrag);//加入DOM
+
+			let og_class = $(".og");
+			og_class.style.top = (person.y)*50+"px";
+			og_class.style.left = (person.x)*50+"px";//小乌龟的位置
+
+			function personRun(o){
+				let top = parseInt(og_class.style.top)||0;
+				let left = parseInt(og_class.style.left)||0;
+				og_class.style.top = top+(o.y)*50+"px";
+				og_class.style.left = left+(o.x)*50+"px";
+				
+			}
+			function doSth(l,u){
+				var i =(og_class.offsetTop/50+(2*u))*8+og_class.offsetLeft/50+(2*l);//box到达的位置
+				console.log("i"+i);
+				let j =(og_class.offsetTop/50+u)*8+og_class.offsetLeft/50+l;//person
+							// console.log(map[j]);//上边的格子字码
+							if(map[j]==2||map[j]==3){//空地则自己上移
+								personRun({x:l,y:u});
+							}else if(map[j]==4||map[j]==5){/*是箱子，获取该箱子，判断上边是不是墙，如果不是，箱子乌龟均上移一格*/
+								let x = og_class.offsetLeft/50+l;//列数，乌龟要去的地方(箱子所在地)
+								let y = (og_class.offsetTop/50+u);//行数
+								let m = og_class.offsetLeft/50+2*l;//列数，箱子要去的地方
+								let n = (og_class.offsetTop/50 +2*u);//行数
+
+								box.forEach(function(v){//v是盒子的标记坐标
+									if(v.x==x&&v.y==y){//推到了盒子
+										if(map[y*8+x]==5){//盒子已经在盒子存放处
+											if(map[n*8+m]==4||map[n*8+m]==1){//上边的格子号，如果是墙或者箱子，不能移动
+											
+											}else{	
+												v.y=v.y+u;
+												v.x=v.x+l;//定位到要去的位置
+												ob_remove();//清除箱子
+												p_box();//重新绘制
+												map[j]=3;//箱子移动后空出来的标记为盒子存放处
+												personRun({x:l,y:u});//乌龟移动
+												console.log(x,y)
+												return;
+											}
+										}
+
+										if(map[n*8+m]==4||map[n*8+m]==1){//上边的格子号，如果是墙或者箱子，不能移动
+											
+										}else if(map[n*8+m]==3){//存放格子处
+											v.y=v.y+u;
+											v.x=v.x+l;//定位到要去的位置
+											ob_remove();//清除箱子
+											p_box();//重新绘制
+											map[j]=2;//箱子移动后空出来的标记为空地
+											map[i]=5;//箱子到达地点
+											personRun({x:l,y:u});//乌龟移动
+										}else{
+											v.y=v.y+u;
+											v.x=v.x+l;
+											ob_remove();//清除箱子
+											p_box();//重新绘制
+											map[j]=2;//箱子移动后空出来的标记为空地
+											personRun({x:l,y:u});//乌龟移动
+										}
+									}
+								});
+								let b = map.every(function(element, index){
+									return (element!=3);
+								})
+								console.log(b);
+								if(b){
+									alert("过关");
+									index++;
+									start();
+								}
+								console.log(i);
+								console.log(j);
+								console.log(og_class.offsetTop);
+								console.log(og_class.offsetLeft);
+								console.log(map);
+							}
+			}
+			onkeyup = function(ev){
+					let oEvent = ev || event;
+					switch(oEvent.keyCode){
+						case 37://left
+							doSth(-1,0);
+						break;
+						case 38://up
+							doSth(0,-1);
+						break;
+						case 39://right
+							doSth(1,0);
+						break;
+						case 40://down
+							doSth(0,1);
+						break;
+					}
+				}
+				up_click.onclick = function(){
+					doSth(0,-1);
+				}
+				down_click.onclick = function(){
+					doSth(0,1);
+				}
+				left_click.onclick = function(){
+					doSth(-1,0);
+				}
+				right_click.onclick = function(){
+					doSth(1,0);
+				}
+
+		}
+	</script>
+</body>
+</html>
